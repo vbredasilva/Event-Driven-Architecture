@@ -1,0 +1,3 @@
+IP - http://85.31.230.3:15672/#/queues
+USUARIO - fcg
+SENHA - fcg@2026

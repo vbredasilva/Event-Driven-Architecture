@@ -1,0 +1,778 @@
+<meta charset="utf-8">
+<title>Arquitetura de Software com Microsserviços</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background:#0f1729; font-family:'Lato','Segoe UI',system-ui,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .slide { width:1280px; height:720px; background:#0f1729; position:relative; padding:44px 66px 0; overflow:hidden; page-break-after:always; display:flex; flex-direction:column; }
+  .body { flex:1; display:flex; flex-direction:column; justify-content:center; padding-bottom:46px; }
+  .slide:last-child { page-break-after:auto; }
+
+  .head { display:flex; align-items:center; gap:18px; margin-bottom:28px; }
+  .badge { width:46px; height:46px; border-radius:9px; background:#3ddc97; color:#0f1729;
+           font-family:'Consolas',monospace; font-weight:700; font-size:20px;
+           display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  h1 { color:#fff; font-size:30px; font-weight:700; letter-spacing:-.2px; }
+  .part { color:#3ddc97; font-family:'Consolas',monospace; font-size:11.5px; letter-spacing:3px; margin-bottom:6px; }
+
+  .lead { color:#c7ccd5; font-size:16px; line-height:1.5; margin-bottom:24px; max-width:1090px; }
+  .lead b { color:#fff; font-weight:700; } .lead .hl { color:#3ddc97; font-weight:700; }
+
+  .prose p { color:#c7ccd5; font-size:15.4px; line-height:1.66; margin-bottom:11px; }
+  .prose p:last-child { margin-bottom:0; }
+  .prose b { color:#fff; } .prose .hl { color:#3ddc97; font-weight:700; }
+
+  .foot { position:absolute; left:66px; right:66px; bottom:24px; display:flex; justify-content:space-between;
+          color:#5c667c; font-size:12.5px; }
+  .foot .n { color:#8b94a6; }
+
+  .cards { display:grid; gap:16px; }
+  .g2 { grid-template-columns:repeat(2,1fr); } .g3 { grid-template-columns:repeat(3,1fr); }
+  .g4 { grid-template-columns:repeat(4,1fr); }
+  .card { background:#1a2438; border:1.5px solid #2b3550; border-radius:9px; padding:15px 17px; }
+  .card h3 { font-size:15px; font-weight:700; margin-bottom:8px; }
+  .card p { color:#c7ccd5; font-size:13.7px; line-height:1.52; }
+  .card p + p { margin-top:7px; }
+  .card b { color:#fff; }
+  .mono, .card code { font-family:'Consolas','Roboto Mono',monospace; }
+  .c-blue   { border-color:#60a5e7; } .c-blue h3   { color:#60a5e7; }
+  .c-teal   { border-color:#58d5d5; } .c-teal h3   { color:#58d5d5; }
+  .c-green  { border-color:#3ddc97; } .c-green h3  { color:#3ddc97; }
+  .c-amber  { border-color:#e4b453; } .c-amber h3  { color:#e4b453; }
+  .c-purple { border-color:#c792ea; } .c-purple h3 { color:#c792ea; }
+  .c-coral  { border-color:#ef7a85; } .c-coral h3  { color:#ef7a85; }
+  .c-grey   { border-color:#3a4660; } .c-grey h3   { color:#8b94a6; }
+
+  .ex { background:#15203a; border-left:3px solid #e4b453; border-radius:0 7px 7px 0;
+        padding:12px 17px; margin-top:14px; }
+  .ex p { color:#d8c9a4; font-size:14.2px; line-height:1.55; font-style:italic; }
+  .ex b { color:#e4b453; font-style:normal; }
+
+  .note { margin-top:18px; color:#9aa3b2; font-size:13.9px; font-style:italic; line-height:1.52; }
+  .note b { color:#3ddc97; font-style:normal; }
+
+  .flow { display:flex; align-items:stretch; }
+  .fbox { background:#1a2438; border:1.5px solid #60a5e7; border-radius:9px; padding:12px 13px; flex:1; text-align:center; }
+  .fbox h4 { font-size:13px; color:#60a5e7; font-weight:700; margin-bottom:4px; }
+  .fbox p  { font-size:11.6px; color:#c7ccd5; line-height:1.38; }
+  .arrow { display:flex; align-items:center; color:#3ddc97; font-size:18px; padding:0 10px; flex:0 0 auto; }
+
+  table { width:100%; border-collapse:collapse; font-size:14.2px; }
+  th { text-align:left; color:#3ddc97; font-size:12px; letter-spacing:.7px; text-transform:uppercase;
+       padding:0 12px 9px; border-bottom:1px solid #27324a; }
+  td { padding:10px 12px; color:#c7ccd5; border-bottom:1px solid #1d2740; line-height:1.45; }
+  td.q { font-family:'Consolas',monospace; color:#e4b453; font-size:12.6px; }
+  td b { color:#fff; }
+
+  ul { list-style:none; }
+  li { color:#c7ccd5; font-size:13.8px; line-height:1.5; padding-left:16px; position:relative; margin-bottom:8px; }
+  li::before { content:'▪'; position:absolute; left:0; color:#3ddc97; }
+  li b { color:#fff; }
+
+  .code { background:#131c30; border:1px solid #27324a; border-radius:9px; padding:14px 18px;
+          font-family:'Consolas','Roboto Mono',monospace; font-size:13px; line-height:1.6; color:#c7ccd5; white-space:pre; }
+  .k { color:#c792ea; } .s { color:#e4b453; } .cm { color:#5c667c; font-style:italic; }
+  .f { color:#60a5e7; } .g { color:#3ddc97; } .r { color:#ef7a85; }
+
+  img.shot { width:100%; border-radius:8px; border:1px solid #27324a; display:block; }
+  .cap { text-align:center; color:#8b94a6; font-size:11.8px; font-style:italic; margin-top:8px; }
+
+  .cover { padding:0 66px; display:flex; flex-direction:column; justify-content:center; height:720px; }
+  .kicker { color:#3ddc97; font-family:'Consolas',monospace; font-size:14px; letter-spacing:4px; }
+  .cover h2 { color:#fff; font-size:54px; line-height:1.14; font-weight:700; margin:24px 0 20px; letter-spacing:-1px; }
+  .cover .sub { color:#c7ccd5; font-size:18px; margin-bottom:30px; }
+  .cover .by { color:#8b94a6; font-size:14px; margin-top:26px; }
+  .brace { position:absolute; right:-40px; top:0; height:720px; color:#172038; font-size:430px;
+           font-family:'Consolas',monospace; line-height:.9; }
+
+  .divider { display:flex; flex-direction:column; justify-content:center; height:720px; padding:0 66px; position:relative; }
+  .divider .num { color:#1f2b45; font-size:150px; font-weight:700; line-height:1; }
+  .divider h2 { color:#fff; font-size:44px; font-weight:700; margin:10px 0 16px; letter-spacing:-.6px; }
+  .divider p { color:#c7ccd5; font-size:17px; line-height:1.55; max-width:800px; }
+</style>
+
+<!-- 01 CAPA -->
+<div class="slide cover">
+  <div class="brace">}</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="badge">&gt;_</div><div class="kicker">PÓS FIAP · ARQUITETURA DE SISTEMAS</div>
+  </div>
+  <h2>Arquitetura de Software<br>com Microsserviços</h2>
+  <div class="sub">Comunicação assíncrona · Filas · Serverless · Kubernetes</div>
+  <div class="card c-grey" style="max-width:720px">
+    <p>Estudo de caso: <b>Fiap Cloud Games</b> — um sistema real, em produção, que vamos abrir para ver cada conceito funcionando.</p>
+  </div>
+  <div class="by">Prof. Vinicius Breda</div>
+</div>
+
+<!-- 02 DIVISOR PARTE 1 -->
+<div class="slide divider">
+  <div class="brace">{</div>
+  <div class="num">01</div>
+  <div class="part">PARTE 1</div>
+  <h2>Os fundamentos</h2>
+  <p>Antes de qualquer código ou ferramenta, precisamos de três ideias: <b style="color:#3ddc97">como dois sistemas conversam</b>, <b style="color:#3ddc97">o que é uma fila</b> e <b style="color:#3ddc97">por que alguém dividiria uma aplicação em várias</b>.</p>
+  <p style="margin-top:14px;color:#8b94a6;font-size:15px">Sem isso, microsserviço vira palavra bonita. Com isso, vira decisão consciente.</p>
+</div>
+
+<!-- 03 COMUNICACAO SINCRONA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">COMUNICAÇÃO</div><h1>Comunicação síncrona: eu falo e espero</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Comunicação <b>síncrona</b> é aquela em que quem pede <span class="hl">fica parado esperando a resposta</span>. Enquanto o outro lado não responde, o solicitante não faz mais nada: ele está bloqueado.</p>
+    <p>É o modelo mais natural e o que todo programador aprende primeiro. Quando seu código chama um método, ele espera o retorno. Quando um sistema faz uma chamada HTTP para outro, a mesma coisa: a linha seguinte só executa quando a resposta chegar — ou quando estourar o tempo limite.</p>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é o telefonema. Você liga, a outra pessoa precisa estar disponível <i>naquele exato momento</i>, e você fica com o telefone no ouvido até ela responder. Se ela não atende, você não consegue o que queria. Se ela demora, você espera.</p>
+  </div>
+  <div class="cards g2" style="margin-top:20px">
+    <div class="card c-green"><h3>Quando é a escolha certa</h3><p>Quando você <b>precisa da resposta para continuar</b>: consultar saldo antes de autorizar um saque, validar um login, buscar o preço de um produto para exibir na tela.</p></div>
+    <div class="card c-coral"><h3>O problema que ela cria</h3><p>Seu sistema fica <b>refém</b> do outro. Se ele cair, você cai junto. Se ele ficar lento, você fica lento. A disponibilidade de um vira a disponibilidade dos dois.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">03</span></div>
+</div>
+
+<!-- 04 COMUNICACAO ASSINCRONA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">COMUNICAÇÃO</div><h1>Comunicação assíncrona: eu aviso e sigo em frente</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Na comunicação <b>assíncrona</b>, quem pede <span class="hl">não espera</span>. Ele deixa o recado em algum lugar confiável e volta imediatamente a trabalhar. Em algum momento — daqui a um milissegundo ou daqui a dez minutos — alguém pega aquele recado e executa a tarefa.</p>
+    <p>A mudança parece pequena, mas ela inverte uma relação importante: os dois sistemas <b>não precisam mais estar no ar ao mesmo tempo</b>. Isso se chama <b>desacoplamento temporal</b>, e é a propriedade que torna tudo o que veremos adiante possível.</p>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é a mensagem de WhatsApp. Você manda e guarda o celular. A pessoa pode estar dormindo, sem bateria ou sem sinal — a mensagem fica lá esperando. Quando ela abrir o aplicativo, vai receber. Você não ficou parado olhando a tela.</p>
+  </div>
+  <div class="cards g2" style="margin-top:20px">
+    <div class="card c-green"><h3>Quando é a escolha certa</h3><p>Quando a tarefa <b>pode acontecer depois</b> sem prejudicar o usuário: enviar e-mail, gerar relatório, processar pagamento, atualizar um estoque, emitir nota fiscal.</p></div>
+    <div class="card c-amber"><h3>O preço que se paga</h3><p>A resposta deixa de ser o resultado final. Ela vira um <b>"recebi seu pedido"</b>. O usuário descobre o desfecho depois — por tela de acompanhamento, notificação ou e-mail.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">04</span></div>
+</div>
+
+<!-- 05 COMPARACAO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">COMUNICAÇÃO</div><h1>Lado a lado: o que muda na prática</h1></div></div>
+  <div class="body">
+  <div class="lead">O mesmo cenário — uma compra que precisa ser paga — nos dois modelos:</div>
+  <table>
+    <tr><th style="width:20%"></th><th style="width:40%">Síncrono (chamada direta)</th><th>Assíncrono (fila)</th></tr>
+    <tr><td><b>Quem espera</b></td><td>O solicitante fica bloqueado até a resposta.</td><td>Ninguém espera. O solicitante responde na hora.</td></tr>
+    <tr><td><b>Se o outro cai</b></td><td>A operação falha. O usuário vê erro.</td><td>O recado espera guardado. Processa quando voltar.</td></tr>
+    <tr><td><b>Se o outro fica lento</b></td><td>Você fica lento junto. O gargalo é contagioso.</td><td>Não te afeta. A fila só acumula um pouco mais.</td></tr>
+    <tr><td><b>Resposta ao usuário</b></td><td>"Compra aprovada." — resultado final.</td><td>"Compra recebida." — o desfecho vem depois.</td></tr>
+    <tr><td><b>Complexidade</b></td><td><b style="color:#3ddc97">Baixa.</b> Fácil de escrever, testar e depurar.</td><td><b style="color:#e4b453">Maior.</b> Exige infraestrutura e novos cuidados.</td></tr>
+  </table>
+  <div class="note"><b>Não existe "o melhor".</b> Existe o adequado para cada necessidade. Um sistema real usa os dois: síncrono onde precisa de resposta imediata, assíncrono onde a tarefa pode seguir seu curso.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">05</span></div>
+</div>
+
+<!-- 06 O QUE E UMA FILA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FILAS</div><h1>O que é uma fila de mensagens</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Uma fila é simplesmente <span class="hl">um lugar seguro onde recados ficam guardados até alguém poder atendê-los</span>. Quem escreve o recado chama-se <b>produtor</b>. Quem lê e executa chama-se <b>consumidor</b>. Entre os dois fica um programa especializado em guardar mensagens: o <b>message broker</b> — no nosso caso, o RabbitMQ.</p>
+    <p>A regra fundamental é esta: <b>o produtor nunca fala com o consumidor</b>. Ele entrega a mensagem ao broker e vai embora. O consumidor, por sua vez, não sabe quem produziu — ele só vê mensagens chegando. Nenhum dos dois conhece o endereço, a versão ou o horário de funcionamento do outro.</p>
+  </div>
+  <div class="flow" style="margin-top:22px">
+    <div class="fbox" style="border-color:#60a5e7"><h4>PRODUTOR</h4><p>deixa o recado</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#e4b453"><h4 style="color:#e4b453">FILA (broker)</h4><p>guarda com segurança,<br>na ordem de chegada</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#3ddc97"><h4 style="color:#3ddc97">CONSUMIDOR</h4><p>lê e executa a tarefa</p></div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é a senha do banco. Você chega, tira a senha e senta. Não precisa saber qual caixa vai te atender, nem se ele está no cafezinho. Se chegarem 50 pessoas de uma vez, a fila cresce — ninguém é mandado embora. O banco abre mais guichês para dar conta.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">06</span></div>
+</div>
+
+<!-- 07 GARANTIAS DA FILA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FILAS</div><h1>A fila não perde: o que ela garante</h1></div></div>
+  <div class="body">
+  <div class="lead">Guardar a mensagem é só metade do trabalho. A outra metade é <b>garantir que ela seja processada</b> mesmo quando algo dá errado.</div>
+  <div class="cards g3">
+    <div class="card c-blue"><h3>1 · Persistência</h3><p>A mensagem é gravada em disco. Se o broker reiniciar, ela continua lá.</p><p>Nada se perde porque "o servidor caiu".</p></div>
+    <div class="card c-teal"><h3>2 · Confirmação (ack)</h3><p>O consumidor só confirma depois de <b>terminar</b> o trabalho.</p><p>Sem confirmação, o broker considera que a tarefa não foi feita.</p></div>
+    <div class="card c-green"><h3>3 · Reentrega</h3><p>Sem confirmação, a fila <b>entrega de novo</b> — para o mesmo consumidor ou para outro.</p><p>O trabalho não evapora silenciosamente.</p></div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é o carteiro com uma carta registrada. Ele só dá baixa quando alguém assina o recebimento. Se ninguém atende, ele <i>volta amanhã</i>. E tenta de novo. A entrega não é dada como feita só porque ele passou na porta.</p>
+  </div>
+  <div class="note" style="margin-top:20px"><b>Guarde esta frase:</b> a fila promete entregar <i>pelo menos uma vez</i> — nunca <i>exatamente uma vez</i>. Essa diferença, que parece detalhe, é o assunto do próximo slide.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">07</span></div>
+</div>
+
+<!-- 08 IDEMPOTENCIA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FILAS</div><h1>A mesma mensagem pode chegar duas vezes</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Se a fila reentrega quando não recebe confirmação, existe um cenário inevitável: o consumidor <b>fez o trabalho</b>, mas a confirmação se perdeu no caminho. Para o broker, aquela tarefa não foi concluída — então ele entrega a mensagem outra vez.</p>
+    <p>Num envio de e-mail, o estrago é pequeno: o cliente recebe dois e-mails. Num <b>pagamento</b>, o estrago é sério: o cliente é cobrado duas vezes. Não dá para "desligar" essa possibilidade — ela é consequência direta de como filas funcionam em qualquer tecnologia.</p>
+    <p>A solução não está na fila. Está no consumidor. Ele precisa ser <span class="hl">idempotente</span>: capaz de receber a mesma mensagem várias vezes <b>produzindo sempre o mesmo resultado</b>, como se tivesse recebido uma só.</p>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> o boleto tem um número único. Se o carteiro entregar a mesma conta duas vezes, você olha o número, percebe que já pagou aquele boleto e <i>não paga de novo</i>. Você é idempotente — não por sorte, mas porque existe um identificador que permite reconhecer o repetido.</p>
+  </div>
+  <div class="note"><b>Na prática:</b> todo consumidor precisa de uma <b>chave de negócio</b> (número do pedido, id da compra) e de uma pergunta antes de agir: "eu já processei isso?". Sem essa chave, não há idempotência possível.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">08</span></div>
+</div>
+
+<!-- 09 FILA DE ERRO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FILAS</div><h1>E quando a mensagem nunca funciona?</h1></div></div>
+  <div class="body">
+  <div class="lead">Reentregar resolve falhas <b>passageiras</b>. Mas e quando o erro é permanente — um dado corrompido, uma regra que nunca vai passar? Tentar para sempre travaria a fila inteira.</div>
+  <div class="flow" style="margin-top:6px">
+    <div class="fbox" style="border-color:#3ddc97"><h4 style="color:#3ddc97">1ª tentativa</h4><p>falhou</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#58d5d5"><h4 style="color:#58d5d5">2ª · espera 5s</h4><p>falhou</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#e4b453"><h4 style="color:#e4b453">3ª · espera 10s</h4><p>falhou</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#ef7a85"><h4 style="color:#ef7a85">FILA DE ERRO</h4><p>desiste e guarda<br>em outra fila</p></div>
+  </div>
+  <div class="cards g2" style="margin-top:24px">
+    <div class="card c-amber">
+      <h3>Por que esperar entre as tentativas</h3>
+      <p>Se o banco de dados caiu, tentar de novo no mesmo milissegundo falha igual. O intervalo crescente — 1s, 5s, 10s — dá tempo para o problema se resolver sozinho.</p>
+    </div>
+    <div class="card c-coral">
+      <h3>Fila de erro (dead-letter queue)</h3>
+      <p>Esgotadas as tentativas, a mensagem <b>não é descartada</b>: vai para uma fila separada. Alguém investiga, corrige a causa e reprocessa depois. O problema fica visível em vez de sumir.</p>
+    </div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> o carteiro tenta três dias seguidos. Na quarta, leva a carta de volta para a agência e registra "destinatário ausente". A carta não foi jogada fora — está guardada, catalogada, esperando alguém resolver.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">09</span></div>
+</div>
+
+<!-- 10 MONOLITO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">ARQUITETURA</div><h1>O monólito: uma aplicação, um deploy</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>No monólito, <b>todo o sistema é uma aplicação só</b>. Cadastro de usuários, catálogo de jogos, pagamento e relatórios vivem no mesmo projeto, compilam juntos, sobem juntos e usam o mesmo banco de dados.</p>
+    <p>É assim que praticamente todo software começa — e está <span class="hl">certo que comece assim</span>. Chamar um método é mais simples que publicar um evento; uma transação de banco é mais simples que coordenar dois serviços; depurar um processo é mais simples que seguir um rastro por cinco máquinas.</p>
+  </div>
+  <div class="cards g2" style="margin-top:20px">
+    <div class="card c-green">
+      <h3>Onde o monólito é excelente</h3>
+      <p><b>Time pequeno.</b> Cinco pessoas no mesmo repositório não atrapalham umas às outras.</p>
+      <p><b>Produto novo.</b> Quando o negócio ainda está mudando toda semana, fronteiras rígidas atrapalham.</p>
+      <p><b>Transações simples.</b> Um <code>BEGIN/COMMIT</code> resolve a consistência de tudo.</p>
+    </div>
+    <div class="card c-coral">
+      <h3>Onde ele começa a doer</h3>
+      <p><b>Deploy.</b> Mudar uma linha do relatório exige subir o sistema inteiro — inclusive o pagamento.</p>
+      <p><b>Escala.</b> Se só o pagamento está sobrecarregado, você precisa duplicar tudo para atendê-lo.</p>
+      <p><b>Falha.</b> Um vazamento de memória no relatório derruba o checkout junto.</p>
+      <p><b>Time grande.</b> 60 pessoas no mesmo código viram fila de merge e medo de mexer.</p>
+    </div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">10</span></div>
+</div>
+
+<!-- 11 MICROSSERVICOS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">ARQUITETURA</div><h1>Microsserviços: vários sistemas pequenos e autônomos</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Microsserviços são a decisão de <b>quebrar a aplicação em serviços independentes</b>, cada um responsável por uma parte do negócio, com <span class="hl">seu próprio banco de dados</span> e seu próprio ciclo de vida.</p>
+    <p>A palavra que mais importa aqui não é "micro" — é <b>autônomo</b>. Um serviço só é microsserviço de verdade se puder ser alterado, testado, implantado e escalado <b>sem combinar nada com os outros</b>. Se para subir o serviço de pagamento você precisa avisar o time de catálogo, você não tem microsserviços: tem um monólito espalhado em vários servidores.</p>
+  </div>
+  <div class="cards g3" style="margin-top:20px">
+    <div class="card c-blue"><h3>Banco próprio</h3><p>Ninguém lê a tabela do vizinho. Precisa de um dado? Pede pelo contrato, nunca pelo banco.</p></div>
+    <div class="card c-teal"><h3>Deploy independente</h3><p>Cada serviço sobe no seu ritmo, sem janela coordenada e sem travar os outros times.</p></div>
+    <div class="card c-green"><h3>Escala seletiva</h3><p>Só o serviço sob pressão ganha mais cópias. Os demais seguem com o que têm.</p></div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> um shopping. A loja de roupas, a praça de alimentação e o cinema são negócios separados — cada um com seu caixa, seu estoque e seu horário. Se o cinema fecha para reforma, a praça de alimentação continua vendendo. No monólito, seria uma loja gigante onde a reforma de um setor fecha a porta de todos.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">11</span></div>
+</div>
+
+<!-- 12 COMPARACAO MONO X MICRO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">ARQUITETURA</div><h1>Monólito x Microsserviços, ponto a ponto</h1></div></div>
+  <div class="body">
+  <table>
+    <tr><th style="width:16%">Critério</th><th style="width:42%">Monólito</th><th>Microsserviços</th></tr>
+    <tr><td><b>Deploy</b></td><td>Tudo junto. Uma linha alterada faz o sistema inteiro subir.</td><td>Cada serviço no seu ritmo, sem combinar com ninguém.</td></tr>
+    <tr><td><b>Escala</b></td><td>Duplica tudo, mesmo que só um módulo precise.</td><td>Multiplica só o serviço sob carga.</td></tr>
+    <tr><td><b>Falha</b></td><td>Um erro grave pode derrubar o sistema todo.</td><td>Falha isolada. O resto continua de pé.</td></tr>
+    <tr><td><b>Banco</b></td><td>Um banco compartilhado; todos acoplados no schema.</td><td>Um banco por serviço; schema privado.</td></tr>
+    <tr><td><b>Times</b></td><td>Todos no mesmo código, disputando espaço.</td><td>Times autônomos, donos do serviço ponta a ponta.</td></tr>
+    <tr><td><b>Depuração</b></td><td><b style="color:#3ddc97">Simples.</b> Um log, um stack trace.</td><td><b style="color:#e4b453">Difícil.</b> O rastro atravessa vários serviços.</td></tr>
+    <tr><td><b>Consistência</b></td><td><b style="color:#3ddc97">Imediata.</b> Uma transação resolve.</td><td><b style="color:#e4b453">Eventual.</b> O dado se ajusta em instantes, não no mesmo momento.</td></tr>
+    <tr><td><b>Infra</b></td><td>Um servidor e um banco bastam.</td><td>Broker, orquestrador, monitoramento, pipelines.</td></tr>
+  </table>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">12</span></div>
+</div>
+
+<!-- 13 QUANDO USAR -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">ARQUITETURA</div><h1>Afinal, quando usar cada um?</h1></div></div>
+  <div class="body">
+  <div class="lead">Esta é a pergunta que realmente importa — e a resposta honesta contraria a moda.</div>
+  <div class="cards g2">
+    <div class="card c-green">
+      <h3>✓ Fique no monólito quando</h3>
+      <p>O time cabe em uma sala e todos conhecem o sistema inteiro.</p>
+      <p>O produto é novo e as regras ainda mudam toda semana.</p>
+      <p>O volume é previsível e um servidor dá conta com folga.</p>
+      <p>Você ainda não entende bem as fronteiras do negócio.</p>
+      <p>Não há equipe para operar broker, cluster e observabilidade.</p>
+    </div>
+    <div class="card c-blue">
+      <h3>✓ Parta para microsserviços quando</h3>
+      <p>Vários times precisam entregar sem esperar uns aos outros.</p>
+      <p>Partes do sistema têm <b>escalas muito diferentes</b> — o pagamento explode na Black Friday, o cadastro não.</p>
+      <p>Uma área precisa de disponibilidade muito maior que o resto.</p>
+      <p>As fronteiras do negócio já estão claras e estáveis.</p>
+      <p>Existe maturidade de infraestrutura para sustentar a operação.</p>
+    </div>
+  </div>
+  <div class="ex">
+    <p><b>O erro mais caro da carreira de muita gente:</b> começar um produto novo já com doze microsserviços. Sem conhecer as fronteiras do negócio, elas saem erradas — e mover uma fronteira entre serviços é dezenas de vezes mais caro do que mover uma pasta dentro de um monólito.</p>
+  </div>
+  <div class="note"><b>Em uma frase:</b> um monólito bem organizado é melhor que microsserviços mal divididos. Microsserviço é a resposta para um problema de <i>escala e organização</i> — não um troféu de modernidade.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">13</span></div>
+</div>
+
+<!-- 14 DIVISOR PARTE 2 -->
+<div class="slide divider">
+  <div class="brace">{</div>
+  <div class="num">02</div>
+  <div class="part">PARTE 2 · ESTUDO DE CASO</div>
+  <h2>Fiap Cloud Games</h2>
+  <p>Agora vamos abrir um sistema <b>real</b>, em produção, e encontrar cada conceito da Parte 1 funcionando: a comunicação assíncrona, a fila, a reentrega, a idempotência e a divisão em serviços autônomos.</p>
+  <p style="margin-top:14px;color:#8b94a6;font-size:15px">Uma plataforma de venda de jogos digitais. O usuário compra um jogo, o pagamento é processado e ele recebe a confirmação por e-mail.</p>
+</div>
+
+<!-- 15 O ECOSSISTEMA -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>Os serviços do Fiap Cloud Games</h1></div></div>
+  <div class="body">
+  <div class="lead">Quatro peças independentes. Cada uma faz <b>uma coisa</b> e tem o seu próprio dado.</div>
+  <div class="cards g4">
+    <div class="card c-blue"><h3>API Jogos</h3><p>Catálogo, estoque e compra. É por aqui que a jornada começa.</p><p class="mono" style="color:#8b94a6;font-size:12px">banco próprio</p></div>
+    <div class="card c-teal"><h3>API Usuários</h3><p>Cadastro e autenticação. Emite o token que protege as demais.</p><p class="mono" style="color:#8b94a6;font-size:12px">banco próprio</p></div>
+    <div class="card c-amber"><h3>API Pagamentos</h3><p>Processa o pagamento da compra e informa o desfecho.</p><p class="mono" style="color:#8b94a6;font-size:12px">banco próprio</p></div>
+    <div class="card c-purple"><h3>Azure Function</h3><p>Envia o e-mail de confirmação. Sem servidor, sem banco.</p><p class="mono" style="color:#8b94a6;font-size:12px">serverless</p></div>
+  </div>
+  <div class="cards g2" style="margin-top:18px">
+    <div class="card c-green"><h3>No centro: o RabbitMQ</h3><p>Todos falam com a fila; <b>ninguém fala com o vizinho</b>. É isso que permite derrubar, atualizar ou multiplicar qualquer serviço sem avisar os outros.</p></div>
+    <div class="card c-grey"><h3>O teste do microsserviço</h3><p>Se a API de Jogos precisasse chamar a de Pagamentos <i>diretamente</i> para funcionar, as duas estariam amarradas — e seria aquele "monólito distribuído" do slide 11.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">15</span></div>
+</div>
+
+<!-- 16 AS FILAS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>As filas do projeto, no RabbitMQ de verdade</h1></div></div>
+  <div class="body">
+  <div class="lead">Quatro filas. O nome segue um padrão: <code class="mono" style="color:#e4b453">quem-consome . o-que-aconteceu</code>.</div>
+  <img class="shot" src="FILAS DO RABBITMQ.png" style="max-height:236px;object-fit:cover;object-position:top">
+  <div class="cap">Painel do RabbitMQ · as 4 filas em execução</div>
+  <table style="margin-top:14px">
+    <tr><th style="width:30%">Fila</th><th style="width:17%">Quem consome</th><th>Para quê</th></tr>
+    <tr><td class="q">pagamentos.pagamento-solicitado</td><td>Pagamentos</td><td>Recebe o pedido de pagamento vindo da compra</td></tr>
+    <tr><td class="q">jogos.pagamento-aprovado</td><td>Jogos</td><td>Baixa o estoque e conclui a compra</td></tr>
+    <tr><td class="q">notificacoes.pagamento-aprovado</td><td>Pagamentos</td><td>Dispara o e-mail de confirmação</td></tr>
+    <tr><td class="q">jogos.pagamento-recusado</td><td>Jogos</td><td>Marca a compra como recusada</td></tr>
+  </table>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">16</span></div>
+</div>
+
+<!-- 17 OS EVENTOS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>O que viaja pela fila: os eventos</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Pela fila não trafega "código" — trafega um <b>aviso de que algo aconteceu</b>. Repare que todos os nomes estão no <span class="hl">passado</span>: eles descrevem fatos consumados, não ordens.</p>
+  </div>
+  <div class="cards g3" style="margin-top:20px">
+    <div class="card c-blue"><h3>PagamentoSolicitado</h3><p>"Uma compra foi registrada e precisa ser paga."</p><p style="color:#8b94a6;font-size:12.4px">Leva: id da compra, jogo, usuário, quantidade e valor.</p></div>
+    <div class="card c-green"><h3>PagamentoAprovado</h3><p>"O pagamento daquela compra foi aprovado."</p><p style="color:#8b94a6;font-size:12.4px">Leva: id da compra e identificador do pagamento.</p></div>
+    <div class="card c-coral"><h3>PagamentoRecusado</h3><p>"O pagamento daquela compra não passou."</p><p style="color:#8b94a6;font-size:12.4px">Leva: id da compra e o motivo da recusa.</p></div>
+  </div>
+  <div class="cards g2" style="margin-top:20px">
+    <div class="card c-amber"><h3>Dois campos presentes em todos</h3><p>O <b>id da compra</b>, que permite reconhecer mensagem repetida — é a chave de idempotência do slide 08.</p><p>E o <b>CorrelationId</b>, um código que nasce no clique do usuário e acompanha todos os eventos daquela jornada.</p></div>
+    <div class="card c-purple"><h3>Por que isso importa</h3><p>É só isso que os serviços compartilham. Nenhum vê o banco do outro, nenhum chama o método do outro. <b>O contrato é a mensagem</b> — e é o que mantém os times independentes.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">17</span></div>
+</div>
+
+<!-- 18 FLUXO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>A jornada completa de uma compra</h1></div></div>
+  <div class="body">
+  <div class="lead">Do clique do usuário ao e-mail de confirmação, atravessando <b>três serviços</b> sem que nenhum chame o outro diretamente.</div>
+
+  <div style="display:flex;gap:12px;align-items:stretch">
+    <div class="card c-grey" style="flex:0 0 128px;display:flex;align-items:center;justify-content:center;text-align:center">
+      <div><div style="color:#8b94a6;font-weight:700;font-size:12.5px">USUÁRIO</div>
+           <div style="font-size:11px;color:#e4b453;margin-top:3px">compra um jogo</div></div>
+    </div>
+    <div class="arrow" style="padding:0 4px">→</div>
+    <div class="card c-blue" style="flex:1;padding:12px 16px">
+      <h3 style="margin-bottom:8px">API JOGOS</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:12px;color:#c7ccd5;line-height:1.38">
+        <div><b style="color:#3ddc97">1</b> Confere o jogo<br><span style="color:#8b94a6">existe? tem estoque?</span></div>
+        <div><b style="color:#3ddc97">2</b> Registra a compra<br><span style="color:#8b94a6">status: pendente</span></div>
+        <div><b style="color:#3ddc97">3</b> Avisa a fila<br><span style="color:#8b94a6">PagamentoSolicitado</span></div>
+      </div>
+    </div>
+    <div class="card c-amber" style="flex:0 0 150px;display:flex;align-items:center;text-align:center;padding:10px">
+      <div style="font-size:11.4px;color:#e4b453;line-height:1.4"><b>↩ o usuário já<br>recebe resposta</b><br><span style="color:#8b94a6">"compra recebida"</span></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;color:#3ddc97;font-size:15px;margin:6px 0 5px">▼</div>
+  <div class="card c-green" style="padding:9px;text-align:center">
+    <span class="mono" style="color:#3ddc97;font-size:13px;font-weight:700">fila&nbsp; pagamentos.pagamento-solicitado</span>
+  </div>
+  <div style="text-align:center;color:#3ddc97;font-size:15px;margin:5px 0 5px">▼</div>
+
+  <div class="card c-teal" style="padding:12px 16px">
+    <h3 style="margin-bottom:8px">API PAGAMENTOS <span style="color:#5c667c;font-weight:400;font-size:12px">· ninguém a chamou — ela reagiu à mensagem</span></h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:12px;color:#c7ccd5;line-height:1.38">
+      <div><b style="color:#3ddc97">4</b> Já paguei esta compra?<br><span style="color:#8b94a6">checagem de idempotência</span></div>
+      <div><b style="color:#3ddc97">5</b> Processa e guarda<br><span style="color:#8b94a6">registra o pagamento</span></div>
+      <div><b style="color:#3ddc97">6</b> Anuncia o desfecho<br><span style="color:#8b94a6">aprovado ou recusado</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;margin:6px 2px 5px;font-size:11.4px;font-style:italic">
+    <span style="color:#3ddc97">▼ APROVADO — o mesmo aviso chega em duas filas</span><span style="color:#ef7a85">RECUSADO ▼</span>
+  </div>
+
+  <div class="cards g3" style="gap:12px">
+    <div class="card c-green" style="padding:10px 12px"><h3 style="font-size:12px">7a · Jogos conclui</h3><p style="font-size:11.6px">Baixa o estoque e aprova a compra.</p></div>
+    <div class="card c-purple" style="padding:10px 12px"><h3 style="font-size:12px">7b · Notificação</h3><p style="font-size:11.6px">Aciona a Azure Function, que envia o e-mail.</p></div>
+    <div class="card c-coral" style="padding:10px 12px"><h3 style="font-size:12px">7c · Jogos cancela</h3><p style="font-size:11.6px">Marca como recusada. Estoque não é tocado.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">18</span></div>
+</div>
+
+<!-- 19 O PONTO QUE CONFUNDE -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>O detalhe que mais confunde — e o mais importante</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Quando o usuário clica em "comprar", a resposta volta no <b>passo 3</b> — antes de o pagamento sequer começar. E a compra fica, por alguns instantes, com o status <span class="hl">pendente</span>.</p>
+    <p>Quem está acostumado com sistemas síncronos acha que deu errado. Não deu. Essa é exatamente a troca que fizemos: o usuário recebe uma resposta <b>rápida e garantida</b> ("recebemos seu pedido") em vez de uma resposta <b>lenta e incerta</b> ("aguarde enquanto falamos com o banco...").</p>
+  </div>
+  <div class="cards g2" style="margin-top:22px">
+    <div class="card c-coral">
+      <h3>Se fosse síncrono</h3>
+      <p>O usuário esperaria o pagamento inteiro na tela.</p>
+      <p>Pagamento fora do ar = <b>compra perdida</b> e erro na cara do cliente.</p>
+      <p>Pagamento lento = site lento para todo mundo.</p>
+    </div>
+    <div class="card c-green">
+      <h3>Como realmente é</h3>
+      <p>O usuário recebe confirmação em milissegundos.</p>
+      <p>Pagamento fora do ar = a mensagem <b>espera na fila</b>; quando o serviço volta, processa normalmente.</p>
+      <p>O cliente acompanha o desfecho pelo pedido ou pelo e-mail.</p>
+    </div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é o iFood. Você finaliza o pedido e a tela confirma na hora — mas a comida ainda não foi preparada, nem saiu para entrega. Ninguém espera de olho na tela até o entregador chegar: você acompanha o status.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">19</span></div>
+</div>
+
+<!-- 20 FAN-OUT -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>Um aviso, vários interessados</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Quando o pagamento é aprovado, duas coisas precisam acontecer: <b>a compra deve ser concluída</b> e <b>o cliente deve ser avisado por e-mail</b>. Poderíamos mandar dois recados. Mandamos <span class="hl">um só</span>.</p>
+    <p>O serviço de Pagamentos simplesmente anuncia: "o pagamento foi aprovado". Quem tiver interesse nesse fato cria a sua própria fila e escuta. Hoje são dois interessados — e o serviço de Pagamentos <b>não sabe o nome de nenhum deles</b>.</p>
+  </div>
+  <div style="display:flex;justify-content:center;margin:22px 0 4px">
+    <div class="card c-amber" style="padding:10px 26px;text-align:center">
+      <span style="color:#e4b453;font-weight:700;font-size:14px">Pagamentos anuncia:</span>
+      <span class="mono" style="color:#fff;font-size:13.5px;margin-left:8px">"PagamentoAprovado"</span>
+    </div>
+  </div>
+  <div style="text-align:center;color:#3ddc97;font-size:17px;margin:2px 0 10px">▼</div>
+  <div class="cards g2" style="max-width:860px;margin:0 auto">
+    <div class="card c-green"><h3>fila do serviço de Jogos</h3><p>Baixa o estoque e marca a compra como aprovada.</p></div>
+    <div class="card c-purple"><h3>fila de notificações</h3><p>Dispara o e-mail de confirmação para o cliente.</p></div>
+  </div>
+  <div class="note" style="margin-top:22px"><b>A vantagem prática:</b> quer um serviço de antifraude ou de relatórios ouvindo essa mesma informação amanhã? Basta ele criar a fila dele. <b>Nenhuma linha</b> muda no serviço de Pagamentos — e nenhum deploy dele é necessário.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">20</span></div>
+</div>
+
+<!-- 21 IDEMPOTENCIA NO FCG -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>Idempotência aplicada: não cobrar duas vezes</h1></div></div>
+  <div class="body">
+  <div class="lead">Aquele conceito do slide 08, agora resolvido em código real. Num sistema de pagamento, é a diferença entre um cliente satisfeito e um processo no Procon.</div>
+  <div class="cards g3">
+    <div class="card c-blue"><h3>1 · A pergunta antes de agir</h3><p>Ao receber o pedido, o serviço consulta: <b>"já existe pagamento para esta compra?"</b></p><p>Se existe, devolve o que já foi feito e <b>não cobra de novo</b>.</p></div>
+    <div class="card c-teal"><h3>2 · A trava no banco</h3><p>A coluna do id da compra tem <b>índice único</b>. Mesmo que duas cópias do serviço tentem gravar ao mesmo tempo, o banco só aceita uma.</p></div>
+    <div class="card c-green"><h3>3 · Do outro lado também</h3><p>O serviço de Jogos só conclui compras que estejam <b>pendentes</b>. Aviso repetido é ignorado — senão o estoque baixaria duas vezes.</p></div>
+  </div>
+  <div class="ex">
+    <p><b>Por que a trava no banco, se já perguntamos antes?</b> Porque entre a pergunta e a gravação existe um intervalo. Com várias cópias do serviço rodando em paralelo, duas podem perguntar ao mesmo tempo, receber "não existe" e tentar gravar. O índice único é a última linha de defesa — e é ela que torna seguro multiplicar o serviço.</p>
+  </div>
+  <div class="note"><b>Guarde:</b> idempotência não é um detalhe de implementação. É o que torna possível <b>escalar</b> e <b>reentregar</b> com segurança — os dois pilares de tudo que vimos até aqui.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">21</span></div>
+</div>
+
+<!-- 22 OUTBOX -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FIAP CLOUD GAMES</div><h1>Garantindo que o aviso nunca se perca</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Existe uma falha silenciosa que todo sistema com fila enfrenta. Registrar a compra no banco e avisar a fila são <b>duas ações separadas</b>. E se a primeira funcionar e a segunda falhar?</p>
+    <p>A compra fica gravada, mas <span class="hl">ninguém nunca será avisado</span> de que ela precisa ser paga. Ela permanece pendente para sempre. O cliente pagou com a atenção dele e não recebe nada — e o pior: <b>não há erro em lugar nenhum</b>.</p>
+  </div>
+  <div class="cards g2" style="margin-top:20px">
+    <div class="card c-coral">
+      <h3>❌ Sem proteção</h3>
+      <p>1. Grava a compra no banco ✓</p>
+      <p>2. <b>O serviço cai neste instante</b> ⚡</p>
+      <p>3. O aviso nunca é publicado ✗</p>
+      <p style="color:#ef7a85;margin-top:9px"><b>Resultado: compra pendente eternamente.</b></p>
+    </div>
+    <div class="card c-green">
+      <h3>✓ Com a caixa de saída</h3>
+      <p>1. Grava a compra <b>e o aviso juntos</b>, na mesma operação ✓</p>
+      <p>2. Confirmada a gravação, um processo em segundo plano entrega o aviso à fila ✓</p>
+      <p style="color:#3ddc97;margin-top:9px"><b>Ou os dois existem, ou nenhum existe.</b></p>
+    </div>
+  </div>
+  <div class="ex">
+    <p><b>No dia a dia:</b> é a caixa de saída do seu e-mail. Você escreve sem internet e clica em enviar — a mensagem fica guardada na caixa de saída. Quando a conexão volta, ela parte sozinha. Você não precisou lembrar de reenviar, e a mensagem não se perdeu.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">22</span></div>
+</div>
+
+<!-- 23 DIVISOR SERVERLESS -->
+<div class="slide divider">
+  <div class="brace">{</div>
+  <div class="num">03</div>
+  <div class="part">PARTE 3</div>
+  <h2>Serverless</h2>
+  <p>Nem toda tarefa merece um serviço inteiro de pé 24 horas por dia. Para o trabalho <b>curto, esporádico e disparado por um evento</b>, existe um modelo mais barato e mais simples.</p>
+  <p style="margin-top:14px;color:#8b94a6;font-size:15px">No Fiap Cloud Games, esse trabalho é o envio do e-mail de confirmação.</p>
+</div>
+
+<!-- 24 O QUE E SERVERLESS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">SERVERLESS</div><h1>O que é serverless de verdade</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>O nome engana: <b>o servidor existe</b>. O que muda é que você <span class="hl">não gerencia nenhum</span>. Você entrega apenas uma função — um pedaço de código com uma entrada e uma saída — e a nuvem cuida de todo o resto.</p>
+    <p>A função não fica rodando o tempo todo. Ela <b>dorme</b> até um gatilho acordá-la: uma chamada HTTP, um arquivo que chegou, um horário agendado, uma mensagem na fila. Terminou a execução, ela some.</p>
+  </div>
+  <div class="cards g3" style="margin-top:20px">
+    <div class="card c-blue"><h3>Você entrega</h3><p>Só a função. Nada de servidor, sistema operacional ou configuração de escala.</p></div>
+    <div class="card c-teal"><h3>A nuvem entrega</h3><p>Infraestrutura, atualizações de segurança, balanceamento e escala automática.</p></div>
+    <div class="card c-green"><h3>Você paga</h3><p>Por <b>execução</b>. Ninguém usou hoje? O custo é <b>zero</b> — não existe máquina ociosa sendo cobrada.</p></div>
+  </div>
+  <div class="cards g2" style="margin-top:18px">
+    <div class="card c-amber"><h3>O trade-off: cold start</h3><p>Depois de um tempo parada, a primeira execução demora mais, porque a nuvem precisa "ligar" o ambiente. Para enviar um e-mail, irrelevante. Para responder a um clique do usuário, pode incomodar.</p></div>
+    <div class="card c-coral"><h3>Quando NÃO usar</h3><p>Processos longos, que guardam estado na memória ou que recebem carga alta e constante. Nesses casos, um serviço tradicional sai mais barato e mais previsível.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">24</span></div>
+</div>
+
+<!-- 25 SERVERLESS NO MERCADO -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">SERVERLESS</div><h1>Como as empresas usam serverless</h1></div></div>
+  <div class="body">
+  <div class="lead">O padrão se repete em todos os casos: <b>tarefa curta, disparada por um evento, com volume irregular</b>.</div>
+  <div class="cards g3">
+    <div class="card c-blue"><h3>Notificações</h3><p>E-mail, SMS e push disparados por acontecimentos do negócio.</p><p style="color:#3ddc97;font-size:12.4px"><b>É o nosso caso no FCG.</b></p></div>
+    <div class="card c-teal"><h3>Processamento de mídia</h3><p>Usuário sobe uma foto e uma função gera as miniaturas e comprime. Plataformas de vídeo usam esse modelo em larga escala.</p></div>
+    <div class="card c-green"><h3>Integrações e webhooks</h3><p>Receber o retorno de um gateway de pagamento ou de um sistema parceiro — tráfego imprevisível, execução de segundos.</p></div>
+    <div class="card c-amber"><h3>Rotinas agendadas</h3><p>Relatório diário, limpeza de base, expiração de carrinho. Substitui o servidor que existia só para rodar uma rotina de madrugada.</p></div>
+    <div class="card c-purple"><h3>Processamento de dados</h3><p>Transformar e mover informação entre sistemas conforme ela chega, sem manter um cluster ligado o dia inteiro.</p></div>
+    <div class="card c-coral"><h3>Picos extremos</h3><p>Black Friday, estreia de jogo, venda de ingresso. Escala para milhares de execuções e volta a zero sozinha.</p></div>
+  </div>
+  <div class="note"><b>Os principais fornecedores:</b> Azure Functions (Microsoft) · AWS Lambda (Amazon) · Cloud Functions (Google). O conceito é o mesmo nos três — muda o nome e os gatilhos disponíveis.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">25</span></div>
+</div>
+
+<!-- 26 AZURE FUNCTION NO FCG -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">SERVERLESS</div><h1>A Azure Function no Fiap Cloud Games</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>No nosso sistema, enviar o e-mail de confirmação é uma tarefa <b>curta, ocasional e que não pode travar um pagamento</b>. Manter um serviço inteiro de pé só para isso seria desperdício — é o caso de uso perfeito para serverless.</p>
+  </div>
+  <div class="flow" style="margin-top:22px">
+    <div class="fbox" style="border-color:#3ddc97"><h4 style="color:#3ddc97">pagamento aprovado</h4><p>o aviso chega<br>na fila de notificações</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#c792ea"><h4 style="color:#c792ea">AZURE FUNCTION</h4><p>acorda, monta o e-mail<br>e envia</p></div>
+    <div class="arrow">→</div>
+    <div class="fbox" style="border-color:#e4b453"><h4 style="color:#e4b453">cliente recebe</h4><p>a função dorme<br>de novo</p></div>
+  </div>
+  <div class="cards g3" style="margin-top:24px">
+    <div class="card c-green"><h3>Fora do caminho crítico</h3><p>Antes, o pagamento chamava o e-mail e <b>ficava esperando</b>. Provedor de e-mail lento significava pagamento lento. Hoje são etapas totalmente separadas.</p></div>
+    <div class="card c-blue"><h3>Com direito a nova tentativa</h3><p>Se o envio falhar, só <b>aquela</b> mensagem volta para a fila e é tentada de novo. O pagamento já está concluído e não é afetado.</p></div>
+    <div class="card c-amber"><h3>Custo proporcional</h3><p>Dia sem venda, custo zero. Dia de pico, a nuvem cria quantas instâncias forem necessárias — sem ninguém configurar nada.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">26</span></div>
+</div>
+
+<!-- 27 DIVISOR K8S -->
+<div class="slide divider">
+  <div class="brace">{</div>
+  <div class="num">04</div>
+  <div class="part">PARTE 4</div>
+  <h2>Kubernetes e escala</h2>
+  <p>Já temos serviços independentes conversando por filas. Falta responder: <b>quem coloca cada um no ar, mantém de pé e multiplica quando a demanda aumenta?</b></p>
+</div>
+
+<!-- 28 O QUE E K8S -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">KUBERNETES</div><h1>O que é Kubernetes</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Kubernetes é o <b>orquestrador</b>: o programa que coloca seus serviços para rodar, <span class="hl">vigia se continuam vivos</span>, recria o que cair e cria cópias extras quando a carga aumenta.</p>
+    <p>Você não diz "ligue este servidor". Você <b>declara o que deseja</b> — "quero três cópias da API de Jogos sempre no ar" — e ele se encarrega de manter essa realidade, inclusive às três da manhã, sem acordar ninguém.</p>
+  </div>
+  <div class="cards g3" style="margin-top:20px">
+    <div class="card c-blue"><h3>Cluster</h3><p>O conjunto de máquinas disponíveis para rodar suas aplicações.</p></div>
+    <div class="card c-teal"><h3>Pod</h3><p>A menor unidade: uma cópia do seu serviço em execução.</p></div>
+    <div class="card c-green"><h3>Deployment</h3><p>Onde você declara quantas cópias quer manter no ar.</p></div>
+    <div class="card c-amber"><h3>Service</h3><p>Um endereço fixo que distribui as chamadas entre as cópias.</p></div>
+    <div class="card c-purple"><h3>Health check</h3><p>Pergunta periódica: "você está bem?". Quem não responde é substituído.</p></div>
+    <div class="card c-coral"><h3>Autoescala (HPA)</h3><p>Cria e remove cópias sozinho, conforme o consumo sobe ou desce.</p></div>
+  </div>
+  <div class="note"><b>Relação com serverless:</b> os dois escalam sozinhos. A diferença é que o Kubernetes mantém seu serviço <b>sempre de pé</b> — ideal para quem recebe tráfego constante; serverless só existe durante a execução — ideal para a tarefa esporádica.</div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">28</span></div>
+</div>
+
+<!-- 29 K8S NO FCG -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">KUBERNETES</div><h1>Cada microsserviço com o seu próprio gerenciamento</h1></div></div>
+  <div class="body">
+  <div class="lead">No FCG, cada serviço tem <b>sua própria configuração de cópias e de autoescala</b> — independentes, inclusive na hora de crescer.</div>
+  <img class="shot" src="03.1.2 - API Pagamentos e Usuários - Auto Scalling.png" style="max-height:238px;object-fit:contain;background:#131c30">
+  <div class="cap">Cluster do Fiap Cloud Games · autoescala por serviço</div>
+  <div class="cards g3" style="margin-top:16px">
+    <div class="card c-blue"><h3>Independência real</h3><p>A API de Jogos pode estar com 5 cópias enquanto a de Usuários roda com 1. Cada uma cresce conforme a <b>sua</b> demanda.</p></div>
+    <div class="card c-green"><h3>Autocorreção</h3><p>Cópia que parar de responder ao health check é removida e recriada automaticamente, sem intervenção humana.</p></div>
+    <div class="card c-amber"><h3>Entrega automatizada</h3><p>O pipeline compila, empacota e publica a nova versão no cluster — sem ninguém acessar servidor manualmente.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">29</span></div>
+</div>
+
+<!-- 30 ESCALA + FILAS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">KUBERNETES</div><h1>Onde filas e escala se encontram</h1></div></div>
+  <div class="body">
+  <div class="prose" style="max-width:1120px">
+    <p>Aqui as duas metades da aula se juntam. Imagine <b>mil compras chegando de uma vez</b> numa promoção. As mensagens se acumulam na fila e o autoescala percebe que o serviço de Pagamentos está sob pressão.</p>
+    <p>Ele cria mais cópias. E aqui está a parte elegante: <span class="hl">a fila distribui sozinha</span>. Cada mensagem é entregue a <b>uma única</b> cópia, então três cópias processam três vezes mais rápido — <b>sem nenhuma configuração extra</b>.</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;margin-top:22px">
+    <div class="card c-amber" style="flex:0 0 240px;text-align:center;padding:14px">
+      <div style="color:#e4b453;font-weight:700;font-size:13.5px">fila com 1.000 mensagens</div>
+      <div style="color:#8b94a6;font-size:11.8px;margin-top:4px">acumuladas no pico</div>
+    </div>
+    <div class="arrow">→</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;flex:1">
+      <div class="card c-green" style="text-align:center;padding:12px"><div style="color:#3ddc97;font-weight:700;font-size:13px">cópia 1</div><div style="color:#8b94a6;font-size:11.5px">processa</div></div>
+      <div class="card c-green" style="text-align:center;padding:12px"><div style="color:#3ddc97;font-weight:700;font-size:13px">cópia 2</div><div style="color:#8b94a6;font-size:11.5px">processa</div></div>
+      <div class="card c-green" style="text-align:center;padding:12px"><div style="color:#3ddc97;font-weight:700;font-size:13px">cópia 3</div><div style="color:#8b94a6;font-size:11.5px">processa</div></div>
+    </div>
+  </div>
+  <div class="ex">
+    <p><b>A fila funciona como amortecedor:</b> num pico de dez vezes o normal, as mensagens <i>esperam</i> enquanto as cópias sobem. Ninguém recebe erro, nada se perde — só demora um pouco mais. Num sistema síncrono, esse mesmo pico viraria uma enxurrada de falhas na tela do cliente.</p>
+  </div>
+  <div class="note"><b>Só funciona por causa do slide 21:</b> com três cópias processando em paralelo e reentregas acontecendo, a mesma mensagem ser processada duas vezes deixa de ser hipótese. <b>É a idempotência que torna a escala segura.</b></div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">30</span></div>
+</div>
+
+<!-- 31 OBSERVABILIDADE -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">KUBERNETES</div><h1>Enxergando um sistema distribuído</h1></div></div>
+  <div class="body">
+  <div class="lead">Quando a jornada atravessa três serviços e uma função, <b>não existe um único log</b> contando a história inteira. Ela precisa ser remontada.</div>
+  <img class="shot" src="03.1.2.3 - Telemetria Cluster Kubernetes.png" style="max-height:218px;object-fit:contain;background:#131c30">
+  <div class="cap">Telemetria do cluster em tempo real</div>
+  <div class="cards g3" style="margin-top:16px">
+    <div class="card c-blue"><h3>O código que liga tudo</h3><p>O <b>CorrelationId</b> nasce no clique e viaja em todos os eventos. Filtrar por ele reconstrói a jornada completa de uma compra.</p></div>
+    <div class="card c-green"><h3>O que monitorar nas filas</h3><p><b>Tamanho da fila</b> e <b>idade da mensagem mais antiga</b>. Fila crescendo significa consumidor sem capacidade — alerta antes do cliente reclamar.</p></div>
+    <div class="card c-amber"><h3>A fila de erro é um termômetro</h3><p>Mensagens acumulando ali indicam falha permanente. Em operação saudável, ela fica vazia.</p></div>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">31</span></div>
+</div>
+
+<!-- 32 GANHOS -->
+<div class="slide">
+  <div class="head"><div class="badge">&gt;_</div><div><div class="part">FECHAMENTO</div><h1>O que essa arquitetura entrega</h1></div></div>
+  <div class="body">
+  <div class="lead">Cada benefício tem um <b>mecanismo concreto</b> por trás — nenhum deles é automático por "usar microsserviços".</div>
+  <div class="cards g3">
+    <div class="card c-green"><h3>Baixo acoplamento</h3><p>Nenhum serviço conhece o outro. Todos falam com a fila.</p></div>
+    <div class="card c-blue"><h3>Resiliência</h3><p>Serviço fora do ar não derruba a operação: a fila guarda e entrega depois.</p></div>
+    <div class="card c-amber"><h3>Nada se perde</h3><p>Reentrega, fila de erro e caixa de saída garantem que nenhum pedido evapore.</p></div>
+    <div class="card c-purple"><h3>Seguro para repetir</h3><p>Idempotência impede cobrança e baixa de estoque em duplicidade.</p></div>
+    <div class="card c-teal"><h3>Escala horizontal</h3><p>Cada serviço cresce sozinho, e a fila distribui o trabalho entre as cópias.</p></div>
+    <div class="card c-coral"><h3>Extensível</h3><p>Novos interessados num evento entram sem que ninguém altere quem publica.</p></div>
+  </div>
+  <div class="ex">
+    <p><b>Para fechar com honestidade:</b> tudo isso tem um preço — consistência eventual, mensagens duplicadas, depuração distribuída e muito mais infraestrutura para operar. Microsserviços e filas resolvem problemas <b>reais</b> de escala e organização. Se o seu sistema ainda não tem esses problemas, essa arquitetura vai cobrar o custo sem entregar o benefício.</p>
+  </div>
+  </div>
+  <div class="foot"><span>Arquitetura de Software com Microsserviços</span><span class="n">32</span></div>
+</div>
+
+<!-- 33 FECHAMENTO -->
+<div class="slide cover">
+  <div class="brace">}</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="badge">&gt;_</div><div class="kicker">RECAPITULANDO</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:30px 0 24px;max-width:1030px">
+    <div class="card c-blue"><h3>Comunicação</h3><p>Síncrono quando você precisa da resposta. Assíncrono quando a tarefa pode seguir seu curso.</p></div>
+    <div class="card c-teal"><h3>Filas</h3><p>Guardam, reentregam e isolam falhas. Exigem consumidores idempotentes.</p></div>
+    <div class="card c-green"><h3>Microsserviços</h3><p>Serviços autônomos, com banco próprio e deploy independente — quando o problema justifica.</p></div>
+    <div class="card c-purple"><h3>Serverless</h3><p>Para a tarefa curta e esporádica, sem servidor para administrar.</p></div>
+    <div class="card c-amber"><h3>Kubernetes</h3><p>Mantém os serviços de pé e multiplica cópias conforme a demanda.</p></div>
+    <div class="card c-coral"><h3>E o principal</h3><p>Escolher a arquitetura adequada ao problema — não a mais moderna.</p></div>
+  </div>
+  <div style="color:#3ddc97;font-size:19px;font-style:italic">Do clique à compra aprovada — sem ninguém esperando bloqueado.</div>
+  <div class="by">Prof. Vinicius Breda · Pós FIAP — Arquitetura de Sistemas</div>
+</div>
